@@ -177,7 +177,7 @@ bot.onText(/\/add (.+)/, (msg, match) => {
 
   watchedSymbols.push({
     symbol,
-    conditions: { overbought: 59, oversold: 30 }
+    conditions: { overbought: 69, oversold: 30 }
   });
 
   saveWatchedSymbols();
@@ -208,7 +208,7 @@ const MAIN_CHAT_ID = '5710130520';
 // setInterval(checkRSIForSymbols, 5 * 60 * 1000);
 // checkRSIForSymbols(); // chạy ngay khi khởi động
 
-const TARGET_MINUTES = [2, 17, 32, 47];
+const TARGET_MINUTES = [1, 16, 31, 46];
 
 function scheduleNextCheck() {
   const now = new Date();
