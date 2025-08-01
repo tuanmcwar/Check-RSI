@@ -1,0 +1,16 @@
+[
+  {
+    "symbol": "FUN",
+    "conditions": {
+      "overbought": 59,
+      "oversold": 30
+    }
+  },
+  {
+    "symbol": "BTC",
+    "conditions": {
+      "overbought": 59,
+      "oversold": 30
+    }
+  }
+]
