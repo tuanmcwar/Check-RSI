@@ -177,7 +177,7 @@ const fs = require("fs");
 
 // ===== CẤU HÌNH =====
 const COINALYZE_API_KEY = "8f72096a-b39b-4913-8812-39b89240d2fd";
-const TELEGRAM_TOKEN = "7640879888:AAGG-YwTdCiAjimmnMZnAXDqYeNYmn78OsI";
+const TELEGRAM_TOKEN = "8376076069:AAEC5aiiSXAPvooDQCqYk7-cMZDoEnvSEKE";
 const CHAT_ID = "5710130520";
 const INTERVAL = "15min";
 const WATCH_FILE = './dataRSI.json';
