@@ -176,7 +176,7 @@ const axios = require("axios");
 const fs = require("fs");
 
 // ===== CẤU HÌNH =====
-const COINALYZE_API_KEY = "8f72096a-b39b-4913-8812-39b89240d2fd";
+const COINALYZE_API_KEY = "3da2ebdb-b69f-4876-ad83-5cd5b4a8fd5d";
 const TELEGRAM_TOKEN = "8376076069:AAEC5aiiSXAPvooDQCqYk7-cMZDoEnvSEKE";
 const CHAT_ID = "5710130520";
 const INTERVAL = "15min";
