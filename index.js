@@ -176,8 +176,10 @@ const axios = require("axios");
 const fs = require("fs");
 
 // ===== CẤU HÌNH =====
-const COINALYZE_API_KEY = "3da2ebdb-b69f-4876-ad83-5cd5b4a8fd5d";
-const TELEGRAM_TOKEN = "8376076069:AAEC5aiiSXAPvooDQCqYk7-cMZDoEnvSEKE";
+const COINALYZE_API_KEY = "adffb13b-f68e-44e5-bc46-d9e467a7423e";
+const TELEGRAM_TOKEN = "7640879888:AAGG-YwTdCiAjimmnMZnAXDqYeNYmn78OsI";
+// dev
+// const TELEGRAM_TOKEN = "8313553073:AAFZX7hDrrfELuHyQnk-CdQy16z1Q7rwZAY";
 const CHAT_ID = "5710130520";
 const INTERVAL = "15min";
 const WATCH_FILE = './dataRSI.json';
@@ -186,6 +188,28 @@ const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
 const MAIN_CHAT_ID = CHAT_ID;
 const TARGET_MINUTES = [1, 16, 31, 46];
 // const TARGET_MINUTES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60];
+
+// // dev
+// const TARGET_MINUTES = [11];
+// const TIME_BLOCKS = [
+//   { start: 11, end: 12 },
+  
+// ];
+
+// const INTERVAL_SECONDS = 5; // mỗi 20 giây
+
+// Các khung phút cố định
+const TIME_BLOCKS = [
+  { start: 1, end: 2 },
+  { start: 16, end: 17 },
+  { start: 31, end: 32 },
+  { start: 46, end: 47 }
+];
+
+const INTERVAL_SECONDS = 5; // mỗi 20 giây
+
+
+
 
 // ========== Load & Save ==========
 function loadWatchedSymbols() {
@@ -310,25 +334,77 @@ bot.onText(/\/list/, (msg) => {
 });
 
 // ========== Schedule RSI Checks ==========
+// function scheduleNextCheck() {
+//   const now = new Date();
+//   const currentMinutes = now.getMinutes();
+
+//   let nextMinute = TARGET_MINUTES.find(min => min > currentMinutes);
+//   if (!nextMinute) {
+//     nextMinute = TARGET_MINUTES[0];
+//     now.setHours(now.getHours() + 1);
+//   }
+
+//   now.setMinutes(nextMinute, 0, 0);
+//   const delay = now.getTime() - Date.now();
+
+//   console.log(`🕒 Lên lịch kiểm tra RSI lúc ${new Date(Date.now() + delay).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`);
+
+//   setTimeout(async () => {
+//     await checkRSIForSymbols();
+//     scheduleNextCheck();
+//   }, delay);
+// }
+
 function scheduleNextCheck() {
   const now = new Date();
-  const currentMinutes = now.getMinutes();
+  const currentMinute = now.getMinutes();
+  const currentSecond = now.getSeconds();
 
-  let nextMinute = TARGET_MINUTES.find(min => min > currentMinutes);
-  if (!nextMinute) {
-    nextMinute = TARGET_MINUTES[0];
-    now.setHours(now.getHours() + 1);
+  // Tìm khung giờ hiện tại
+  const currentBlock = TIME_BLOCKS.find(b => currentMinute >= b.start && currentMinute <= b.end);
+
+  // Nếu hiện tại không nằm trong bất kỳ khung nào → tìm khung kế tiếp
+  if (!currentBlock) {
+    const nextBlock = TIME_BLOCKS.find(b => b.start > currentMinute) || TIME_BLOCKS[0];
+    const nextTime = new Date();
+    if (nextBlock.start <= currentMinute) nextTime.setHours(now.getHours() + 1);
+    nextTime.setMinutes(nextBlock.start, 0, 0);
+    const delay = nextTime.getTime() - now.getTime();
+    console.log(`⏳ Chờ đến phút ${nextBlock.start} để bắt đầu chu kỳ mới (${Math.round(delay / 1000)}s nữa)...`);
+    return setTimeout(scheduleNextCheck, delay);
   }
 
-  now.setMinutes(nextMinute, 0, 0);
-  const delay = now.getTime() - Date.now();
+  // Nếu đang trong khung hợp lệ
+  const totalSecSinceBlockStart = (currentMinute - currentBlock.start) * 60 + currentSecond;
+  let nextOffset = Math.ceil(totalSecSinceBlockStart / INTERVAL_SECONDS) * INTERVAL_SECONDS;
+  if (nextOffset === totalSecSinceBlockStart) nextOffset += INTERVAL_SECONDS;
 
-  console.log(`🕒 Lên lịch kiểm tra RSI lúc ${new Date(Date.now() + delay).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`);
+  const totalDuration = (currentBlock.end - currentBlock.start) * 60;
+  if (nextOffset > totalDuration) {
+    // Kết thúc khung hiện tại → đợi đến khung kế tiếp
+    const nextBlock = TIME_BLOCKS.find(b => b.start > currentBlock.end) || TIME_BLOCKS[0];
+    const nextTime = new Date();
+    if (nextBlock.start <= currentBlock.end) nextTime.setHours(now.getHours() + 1);
+    nextTime.setMinutes(nextBlock.start, 0, 0);
+    const delay = nextTime.getTime() - now.getTime();
+    console.log(`✅ Kết thúc khung ${currentBlock.start}–${currentBlock.end}. Chờ đến ${nextBlock.start} phút (${Math.round(delay / 1000)}s nữa)...`);
+    return setTimeout(scheduleNextCheck, delay);
+  }
+
+  const nextTime = new Date();
+  nextTime.setMinutes(currentBlock.start + Math.floor(nextOffset / 60));
+  nextTime.setSeconds(nextOffset % 60, 0);
+
+  const delay = nextTime.getTime() - now.getTime();
+
+  console.log(`🕒 Lên lịch kiểm tra RSI lúc ${nextTime.toLocaleTimeString("vi-VN")}`);
 
   setTimeout(async () => {
     await checkRSIForSymbols();
     scheduleNextCheck();
   }, delay);
 }
+
+
 
 scheduleNextCheck();
