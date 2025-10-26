@@ -177,7 +177,7 @@ const fs = require("fs");
 
 // ===== CẤU HÌNH =====
 const COINALYZE_API_KEY = "adffb13b-f68e-44e5-bc46-d9e467a7423e";
-const TELEGRAM_TOKEN = "7640879888:AAGG-YwTdCiAjimmnMZnAXDqYeNYmn78OsI";
+const TELEGRAM_TOKEN = "8376076069:AAHOYwKOZOs7Z-j4-dhr9oG2ySdQgDhbCGs";
 // dev
 // const TELEGRAM_TOKEN = "8313553073:AAFZX7hDrrfELuHyQnk-CdQy16z1Q7rwZAY";
 const CHAT_ID = "5710130520";
